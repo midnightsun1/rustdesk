@@ -134,6 +134,13 @@ pub fn core_main() -> Option<CoreMainAction> {
     if _is_flutter_invoke_new_connection {
         return core_main_invoke_new_connection(std::env::args()).map(CoreMainAction::StartUi);
     }
+    #[cfg(windows)]
+    if args.is_empty() && !no_server {
+        crate::platform::windows::autostart::check_autostart_config();
+        if let Some(peer_id) = crate::platform::windows::autostart::take_auto_connect_peer() {
+            hbb_common::allow_err!(crate::run_me(vec!["--connect", &peer_id]));
+        }
+    }
     let click_setup = cfg!(windows) && args.is_empty() && crate::common::is_setup(&arg_exe);
     if click_setup && !config::is_disable_installation() {
         args.push("--install".to_owned());

@@ -826,5 +826,10 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("install-directory-not-empty-tip", "A kiválasztott mappa nem üres. A telepítés törölheti a meglévő adatokat. Fontolja meg egy másik mappa kiválasztását."),
         ("Request approval", "Jóváhagyás kérése"),
         ("Forever", "Örökre"),
+        ("Startup", ""),
+        ("Start with system", ""),
+        ("Connect automatically after system restart", ""),
+        ("Auto connect peer", ""),
+        ("No peers", ""),
     ].iter().cloned().collect();
 }

@@ -22,6 +22,10 @@ pub const OPTION_THEME: &str = "theme";
 pub const OPTION_REMOTE_MENUBAR_DRAG_LEFT: &str = "remote-menubar-drag-left";
 pub const OPTION_REMOTE_MENUBAR_DRAG_RIGHT: &str = "remote-menubar-drag-right";
 pub const OPTION_HIDE_AB_TAGS_PANEL: &str = "hideAbTagsPanel";
+pub const OPTION_START_ON_BOOT: &str = "start-on-boot";
+pub const OPTION_AUTO_CONNECT_PEER_ID: &str = "auto-connect-peer-id";
+pub const OPTION_AUTO_CONNECT_ENABLED: &str = "auto-connect-enabled";
+pub const OPTION_AUTO_CONNECT_PENDING: &str = "auto-connect-pending";
 pub const OPTION_ENABLE_CONFIRM_CLOSING_TABS: &str = "enable-confirm-closing-tabs";
 pub const OPTION_ENABLE_OPEN_NEW_CONNECTIONS_IN_TABS: &str = "enable-open-new-connections-in-tabs";
 pub const OPTION_TEXTURE_RENDER: &str = "use-texture-render";
@@ -269,6 +273,10 @@ pub const KEYS_LOCAL_SETTINGS: &[&str] = &[
     OPTION_SHOW_VIRTUAL_JOYSTICK,
     OPTION_ENABLE_FLUTTER_HTTP_ON_RUST,
     OPTION_ALLOW_ASK_FOR_NOTE,
+    OPTION_START_ON_BOOT,
+    OPTION_AUTO_CONNECT_PEER_ID,
+    OPTION_AUTO_CONNECT_ENABLED,
+    OPTION_AUTO_CONNECT_PENDING,
 ];
 // DEFAULT_SETTINGS, OVERWRITE_SETTINGS
 pub const KEYS_SETTINGS: &[&str] = &[

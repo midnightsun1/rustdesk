@@ -161,10 +161,18 @@ void runMainApp(bool startService) async {
     if (handledByUniLinks || handleUriLink(cmdArgs: kBootArgs)) {
       windowManager.hide();
     } else {
-      windowManager.show();
-      windowManager.focus();
-      // Move registration of active main window here to prevent from async visible check.
-      rustDeskWinManager.registerActiveWindow(kWindowMainId);
+      final autoConnected = isWindows &&
+          !bind.isIncomingOnly() &&
+          mainGetLocalBoolOptionSync(kOptionAutoConnectPending);
+      if (autoConnected) {
+        autoConnectOnStartup();
+        windowManager.hide();
+      } else {
+        windowManager.show();
+        windowManager.focus();
+        // Move registration of active main window here to prevent from async visible check.
+        rustDeskWinManager.registerActiveWindow(kWindowMainId);
+      }
     }
     windowManager.setOpacity(1);
     windowManager.setTitle(getWindowName());
