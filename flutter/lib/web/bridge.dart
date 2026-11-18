@@ -1802,6 +1802,14 @@ class RustdeskImpl {
     return false;
   }
 
+  bool mainGetStartOnBoot({dynamic hint}) {
+    return false;
+  }
+
+  Future<void> mainSetStartOnBoot({required bool enabled, dynamic hint}) {
+    return Future(() {});
+  }
+
   bool mainGetUseTextureRender({dynamic hint}) {
     throw UnimplementedError("mainGetUseTextureRender");
   }

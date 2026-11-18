@@ -1669,18 +1669,6 @@ bool mainGetLocalBoolOptionSync(String key) {
   return option2bool(key, bind.mainGetLocalOption(key: key));
 }
 
-/// Connects to the peer picked in Settings once, on the launch that follows
-/// an app restart. The pending flag is cleared so a manual relaunch does not
-/// reconnect.
-void autoConnectOnStartup() {
-  if (!isWindows || bind.isIncomingOnly()) return;
-  if (!mainGetLocalBoolOptionSync(kOptionAutoConnectPending)) return;
-  mainSetLocalBoolOption(kOptionAutoConnectPending, false);
-  final peerId = bind.mainGetLocalOption(key: kOptionAutoConnectPeerId);
-  if (peerId.isEmpty) return;
-  handleUriLink(cmdArgs: ['--connect', peerId]);
-}
-
 bool mainGetPeerBoolOptionSync(String id, String key) {
   return option2bool(key, bind.mainGetPeerOptionSync(id: id, key: key));
 }
