@@ -793,7 +793,8 @@ jobs:
             ./SignOutput/rustdesk-*.exe
 
   build-rustdesk-ios:
-    if: ${{ inputs.upload-artifact }}
+    # Disabled on this fork: Windows-only changes, no macOS runner budget.
+    if: false
     name: build rustdesk ios ipa
     runs-on: ${{ matrix.job.os }}
     needs: [generate-bridge]
@@ -915,6 +916,8 @@ jobs:
 
 
   build-for-macOS:
+    # Disabled on this fork: Windows-only changes, no macOS runner budget.
+    if: false
     name: ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
     needs: [generate-bridge]

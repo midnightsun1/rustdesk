@@ -1241,6 +1241,27 @@ pub fn main_get_local_option(key: String) -> SyncReturn<String> {
     SyncReturn(get_local_option(key))
 }
 
+pub fn main_get_start_on_boot() -> SyncReturn<bool> {
+    #[cfg(windows)]
+    {
+        return SyncReturn(crate::platform::windows::autostart::is_enabled());
+    }
+    #[cfg(not(windows))]
+    SyncReturn(false)
+}
+
+pub fn main_set_start_on_boot(enabled: bool) -> hbb_common::anyhow::Result<()> {
+    #[cfg(windows)]
+    {
+        return crate::platform::windows::autostart::set_enabled(enabled);
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = enabled;
+        Ok(())
+    }
+}
+
 pub fn main_get_use_texture_render() -> SyncReturn<bool> {
     SyncReturn(use_texture_render())
 }
@@ -1281,7 +1302,15 @@ pub fn main_set_env(key: String, value: Option<String>) -> SyncReturn<()> {
 pub fn main_set_local_option(key: String, value: String) {
     let is_texture_render_key = key.eq(keys::OPTION_TEXTURE_RENDER);
     let is_d3d_render_key = key.eq(keys::OPTION_ALLOW_D3D_RENDER);
+    let pending_auto_connect = (key.eq(keys::OPTION_AUTO_CONNECT_PEER_ID) && !value.is_empty())
+        || (key.eq(keys::OPTION_AUTO_CONNECT_ENABLED) && value == "Y");
     set_local_option(key, value.clone());
+    if pending_auto_connect
+        && LocalConfig::get_bool_option(keys::OPTION_START_ON_BOOT)
+        && !LocalConfig::get_option(keys::OPTION_AUTO_CONNECT_PEER_ID).is_empty()
+    {
+        LocalConfig::set_option(keys::OPTION_AUTO_CONNECT_PENDING.to_owned(), "Y".to_owned());
+    }
     let is_render_target =
         |session: &crate::flutter::FlutterSession| session.is_default() || session.is_view_camera();
     if is_texture_render_key {

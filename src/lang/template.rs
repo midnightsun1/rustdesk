@@ -826,5 +826,10 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("install-directory-not-empty-tip", ""),
         ("Request approval", ""),
         ("Forever", ""),
+        ("Startup", ""),
+        ("Start with system", ""),
+        ("Connect automatically after system restart", ""),
+        ("Auto connect peer", ""),
+        ("No peers", ""),
     ].iter().cloned().collect();
 }

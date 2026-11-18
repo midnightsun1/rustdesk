@@ -20,6 +20,11 @@ pub fn start_tray() {
     #[cfg(target_os = "linux")]
     crate::server::check_zombie();
 
+    #[cfg(windows)]
+    std::thread::spawn(
+        crate::platform::windows::autostart::check_autostart_config_after_install_sync,
+    );
+
     allow_err!(make_tray());
 }
 

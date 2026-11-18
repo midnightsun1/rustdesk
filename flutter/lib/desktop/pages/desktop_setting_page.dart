@@ -417,6 +417,7 @@ class _GeneralState extends State<_General> {
       children: [
         if (!isWeb) service(),
         theme(),
+        startup(context),
         _Card(title: 'Language', children: [language()]),
         if (!isWeb) hwcodec(),
         if (!isWeb) audio(context),
@@ -491,6 +492,106 @@ class _GeneralState extends State<_General> {
           label: 'Follow System',
           onChanged: isOptFixed ? null : onChanged),
     ]);
+  }
+
+  Widget startup(BuildContext context) {
+    if (!isWindows || bind.isIncomingOnly()) {
+      return const Offstage();
+    }
+    return StatefulBuilder(builder: (context, setLocalState) {
+      final startOnBoot = bind.mainGetStartOnBoot();
+      final autoConnect =
+          mainGetLocalBoolOptionSync(kOptionAutoConnectEnabled);
+      final peerId = bind.mainGetLocalOption(key: kOptionAutoConnectPeerId);
+      return _Card(title: 'Startup', children: [
+        Row(children: [
+          Checkbox(
+            value: startOnBoot,
+            onChanged: (v) async {
+              try {
+                await bind.mainSetStartOnBoot(enabled: v ?? false);
+              } catch (e) {
+                debugPrint('set start on boot failed: $e');
+              }
+              setLocalState(() {});
+            },
+          ),
+          Expanded(child: Text(translate('Start with system'))),
+        ]).marginSymmetric(vertical: 5),
+        _OptionCheckBox(
+          context,
+          'Connect automatically after system restart',
+          kOptionAutoConnectEnabled,
+          isServer: false,
+          enabled: startOnBoot,
+          update: (_) => setLocalState(() {}),
+        ),
+        if (autoConnect)
+          Row(children: [
+            Text(translate('Auto connect peer')),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextButton(
+                onPressed: () async {
+                  await _pickAutoConnectPeer(context);
+                  setLocalState(() {});
+                },
+                child: Text(peerId.isEmpty ? translate('Select') : peerId),
+              ),
+            ),
+          ]),
+      ]);
+    });
+  }
+
+  Future<void> _pickAutoConnectPeer(BuildContext context) async {
+    final peers = [
+      ...gFFI.recentPeersModel.peers,
+      ...gFFI.favoritePeersModel.peers
+    ];
+    final seen = <String>{};
+    final options = <ListTile>[];
+    for (final peer in peers) {
+      if (!seen.add(peer.id)) continue;
+      options.add(ListTile(
+        title: Text(peer.alias.isNotEmpty ? peer.alias : peer.id),
+        subtitle: peer.hostname.isNotEmpty ? Text(peer.hostname) : null,
+        trailing: peer.id ==
+                bind.mainGetLocalOption(key: kOptionAutoConnectPeerId)
+            ? const Icon(Icons.check)
+            : null,
+        onTap: () {
+          bind.mainSetLocalOption(key: kOptionAutoConnectPeerId, value: peer.id);
+          Navigator.pop(context);
+        },
+      ));
+    }
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(translate('Auto connect peer')),
+        content: SizedBox(
+          width: 380,
+          height: 420,
+          child: options.isEmpty
+              ? Center(child: Text(translate('No peers')))
+              : ListView(children: options),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              bind.mainSetLocalOption(key: kOptionAutoConnectPeerId, value: '');
+              Navigator.pop(ctx);
+            },
+            child: Text(translate('Clear')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(translate('Close')),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget service() {

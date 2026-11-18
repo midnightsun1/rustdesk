@@ -94,6 +94,17 @@ pub fn core_main() -> Option<CoreMainAction> {
         }
         i += 1;
     }
+    let click_setup = cfg!(windows) && args.is_empty() && crate::common::is_setup(&arg_exe);
+    // The Startup shortcut starts the tray, which handles this; a manual launch
+    // claims the flag first so only one connection window opens.
+    #[cfg(windows)]
+    if args.is_empty()
+        && !no_server
+        && !click_setup
+        && crate::platform::windows::autostart::connect_after_restart()
+    {
+        return None;
+    }
     #[cfg(any(target_os = "linux", target_os = "windows"))]
     if args.is_empty() {
         #[cfg(target_os = "linux")]
@@ -134,7 +145,6 @@ pub fn core_main() -> Option<CoreMainAction> {
     if _is_flutter_invoke_new_connection {
         return core_main_invoke_new_connection(std::env::args()).map(CoreMainAction::StartUi);
     }
-    let click_setup = cfg!(windows) && args.is_empty() && crate::common::is_setup(&arg_exe);
     if click_setup && !config::is_disable_installation() {
         args.push("--install".to_owned());
         flutter_args.push("--install".to_string());
