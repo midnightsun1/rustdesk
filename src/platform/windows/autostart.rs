@@ -2,8 +2,9 @@
 //!
 //! The installer drops `{app_name} Tray.lnk` into the all-users Startup folder
 //! unconditionally. This module makes that shortcut a user-controlled switch:
-//! `start-on-boot` says whether it should exist, and every process start
-//! reconciles the folder with that option.
+//! `start-on-boot` says whether it should exist, and the tray process
+//! reconciles the folder with that option. The main process cannot: its own
+//! launch is already in flight, so it never observes the install sync.
 
 use super::installer_shell::shortcut_bytes;
 use hbb_common::{allow_err, config::LocalConfig, log, ResultType};
@@ -19,6 +20,40 @@ const TRAY_ARG: &str = "--tray";
 pub fn check_autostart_config() {
     let enabled = LocalConfig::get_bool_option(base::config::keys::OPTION_START_ON_BOOT);
     allow_err!(set_enabled_impl(enabled));
+}
+
+/// Runs in the tray process, which outlives the install's shortcut sync.
+/// The tray is started right after an install, before the desktop user's
+/// config exists, so wait before trusting an empty option as "disabled".
+/// Auto-connect also runs here: the Startup shortcut launches `--tray`, and
+/// the tray has to open the connection window.
+pub fn check_autostart_config_after_install_sync() {
+    let start = std::time::Instant::now();
+    while LocalConfig::get_option(base::config::keys::OPTION_START_ON_BOOT).is_empty() {
+        if start.elapsed() >= std::time::Duration::from_secs(60)
+            || !super::is_self_service_running()
+        {
+            return;
+        }
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
+    check_autostart_config();
+    connect_after_restart();
+}
+
+/// Launches the saved peer once on the launch that follows a restart.
+/// Returns whether a connection window was launched.
+pub fn connect_after_restart() -> bool {
+    let Some(peer_id) = take_auto_connect_peer() else {
+        return false;
+    };
+    match crate::run_me(vec!["--connect", &peer_id]) {
+        Ok(_) => true,
+        Err(err) => {
+            log::error!("auto connect failed: {err}");
+            false
+        }
+    }
 }
 
 pub fn is_enabled() -> bool {
